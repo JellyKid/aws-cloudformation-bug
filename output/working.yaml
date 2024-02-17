@@ -1,0 +1,765 @@
+Resources:
+  testbucketE6E05ABE:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      BucketName: test-bucket-cf-bug
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: aws-cdk:auto-delete-objects
+          Value: "true"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/test-bucket/Resource
+  testbucketPolicy83E60200:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: testbucketE6E05ABE
+      PolicyDocument:
+        Statement:
+          - Action: s3:*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal:
+              AWS: "*"
+            Resource:
+              - Fn::GetAtt:
+                  - testbucketE6E05ABE
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - testbucketE6E05ABE
+                        - Arn
+                    - /*
+          - Action:
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:List*
+              - s3:PutBucketPolicy
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+                  - Arn
+            Resource:
+              - Fn::GetAtt:
+                  - testbucketE6E05ABE
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - testbucketE6E05ABE
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/test-bucket/Policy/Resource
+  testbucketAutoDeleteObjectsCustomResourceA70D265B:
+    Type: Custom::S3AutoDeleteObjects
+    Properties:
+      ServiceToken:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F
+          - Arn
+      BucketName:
+        Ref: testbucketE6E05ABE
+    DependsOn:
+      - testbucketPolicy83E60200
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/test-bucket/AutoDeleteObjectsCustomResource/Default
+  CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      ManagedPolicyArns:
+        - Fn::Sub: arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Role
+  CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: cdk-hnb659fds-assets-590001430189-us-east-2
+        S3Key: b7f33614a69548d6bafe224d751a7ef238cde19097415e553fe8b63a4c8fd8a6.zip
+      Timeout: 900
+      MemorySize: 128
+      Handler: index.handler
+      Role:
+        Fn::GetAtt:
+          - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+          - Arn
+      Runtime: nodejs18.x
+      Description:
+        Fn::Join:
+          - ""
+          - - "Lambda function for auto-deleting objects in "
+            - Ref: testbucketE6E05ABE
+            - " S3 bucket."
+    DependsOn:
+      - CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/Custom::S3AutoDeleteObjectsCustomResourceProvider/Handler
+      aws:asset:path: asset.b7f33614a69548d6bafe224d751a7ef238cde19097415e553fe8b63a4c8fd8a6
+      aws:asset:property: Code
+  testclusterDF8B0D19:
+    Type: AWS::ECS::Cluster
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/test-cluster/Resource
+  testclusterF067C117:
+    Type: AWS::ECS::ClusterCapacityProviderAssociations
+    Properties:
+      CapacityProviders:
+        - Ref: capacityprovider1DCECBF4
+      Cluster:
+        Ref: testclusterDF8B0D19
+      DefaultCapacityProviderStrategy: []
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/test-cluster/test-cluster
+  asgInstanceSecurityGroup5CEB2975:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: AwsCloudformationBugStack/asg/InstanceSecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+      VpcId: vpc-0c9d33adb667c373f
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/InstanceSecurityGroup/Resource
+  asgInstanceRole8AC4201C:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+        Version: "2012-10-17"
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/InstanceRole/Resource
+  asgInstanceRoleDefaultPolicyFF611E81:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ecs:DeregisterContainerInstance
+              - ecs:RegisterContainerInstance
+              - ecs:Submit*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - testclusterDF8B0D19
+                - Arn
+          - Action:
+              - ecs:Poll
+              - ecs:StartTelemetrySession
+            Condition:
+              ArnEquals:
+                ecs:cluster:
+                  Fn::GetAtt:
+                    - testclusterDF8B0D19
+                    - Arn
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - ecr:GetAuthorizationToken
+              - ecs:DiscoverPollEndpoint
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: asgInstanceRoleDefaultPolicyFF611E81
+      Roles:
+        - Ref: asgInstanceRole8AC4201C
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/InstanceRole/DefaultPolicy/Resource
+  asgInstanceProfile4E44E320:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - Ref: asgInstanceRole8AC4201C
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/InstanceProfile
+  asgLaunchTemplate3E13F832:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        IamInstanceProfile:
+          Arn:
+            Fn::GetAtt:
+              - asgInstanceProfile4E44E320
+              - Arn
+        ImageId:
+          Ref: SsmParameterValueawsserviceecsoptimizedamiamazonlinux2023recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter
+        InstanceType: t2.micro
+        Monitoring:
+          Enabled: false
+        SecurityGroupIds:
+          - Fn::GetAtt:
+              - asgInstanceSecurityGroup5CEB2975
+              - GroupId
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: AwsCloudformationBugStack/asg/LaunchTemplate
+          - ResourceType: volume
+            Tags:
+              - Key: Name
+                Value: AwsCloudformationBugStack/asg/LaunchTemplate
+        UserData:
+          Fn::Base64:
+            Fn::Join:
+              - ""
+              - - |-
+                  #!/bin/bash
+                  echo ECS_CLUSTER=
+                - Ref: testclusterDF8B0D19
+                - |-2
+                   >> /etc/ecs/ecs.config
+                  sudo iptables --insert FORWARD 1 --in-interface docker+ --destination 169.254.169.254/32 --jump DROP
+                  sudo service iptables save
+                  echo ECS_AWSVPC_BLOCK_IMDS=true >> /etc/ecs/ecs.config
+      TagSpecifications:
+        - ResourceType: launch-template
+          Tags:
+            - Key: Name
+              Value: AwsCloudformationBugStack/asg/LaunchTemplate
+    DependsOn:
+      - asgInstanceRoleDefaultPolicyFF611E81
+      - asgInstanceRole8AC4201C
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/LaunchTemplate/Resource
+  asgASG4D014670:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId:
+          Ref: asgLaunchTemplate3E13F832
+        Version:
+          Fn::GetAtt:
+            - asgLaunchTemplate3E13F832
+            - LatestVersionNumber
+      MaxSize: "1"
+      MinSize: "1"
+      Tags:
+        - Key: Name
+          PropagateAtLaunch: true
+          Value: AwsCloudformationBugStack/asg
+      VPCZoneIdentifier:
+        - subnet-0bba815e8b2db6a9a
+        - subnet-06510aba8bba1ab49
+        - subnet-0dc8d4fc66c8e38f1
+    UpdatePolicy:
+      AutoScalingScheduledAction:
+        IgnoreUnmodifiedGroupSizeProperties: true
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/ASG
+  asgDrainECSHookFunctionServiceRoleC052B966:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+        Version: "2012-10-17"
+      ManagedPolicyArns:
+        - Fn::Join:
+            - ""
+            - - "arn:"
+              - Ref: AWS::Partition
+              - :iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/DrainECSHook/Function/ServiceRole/Resource
+  asgDrainECSHookFunctionServiceRoleDefaultPolicy4BFB0871:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ec2:DescribeHosts
+              - ec2:DescribeInstanceAttribute
+              - ec2:DescribeInstanceStatus
+              - ec2:DescribeInstances
+            Effect: Allow
+            Resource: "*"
+          - Action: autoscaling:CompleteLifecycleAction
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - arn:aws:autoscaling:us-east-2:590001430189:autoScalingGroup:*:autoScalingGroupName/
+                  - Ref: asgASG4D014670
+          - Action:
+              - ecs:DescribeContainerInstances
+              - ecs:DescribeTasks
+              - ecs:ListTasks
+              - ecs:UpdateContainerInstancesState
+            Condition:
+              ArnEquals:
+                ecs:cluster:
+                  Fn::GetAtt:
+                    - testclusterDF8B0D19
+                    - Arn
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - ecs:ListContainerInstances
+              - ecs:SubmitContainerStateChange
+              - ecs:SubmitTaskStateChange
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - testclusterDF8B0D19
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: asgDrainECSHookFunctionServiceRoleDefaultPolicy4BFB0871
+      Roles:
+        - Ref: asgDrainECSHookFunctionServiceRoleC052B966
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/DrainECSHook/Function/ServiceRole/DefaultPolicy/Resource
+  asgDrainECSHookFunction4A673AE9:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3, json, os, time
+
+          ecs = boto3.client('ecs')
+          autoscaling = boto3.client('autoscaling')
+
+
+          def lambda_handler(event, context):
+            print(json.dumps(dict(event, ResponseURL='...')))
+            cluster = os.environ['CLUSTER']
+            snsTopicArn = event['Records'][0]['Sns']['TopicArn']
+            lifecycle_event = json.loads(event['Records'][0]['Sns']['Message'])
+            instance_id = lifecycle_event.get('EC2InstanceId')
+            if not instance_id:
+              print('Got event without EC2InstanceId: %s', json.dumps(dict(event, ResponseURL='...')))
+              return
+
+            instance_arn = container_instance_arn(cluster, instance_id)
+            print('Instance %s has container instance ARN %s' % (lifecycle_event['EC2InstanceId'], instance_arn))
+
+            if not instance_arn:
+              return
+
+            task_arns = container_instance_task_arns(cluster, instance_arn)
+
+            if task_arns:
+              print('Instance ARN %s has task ARNs %s' % (instance_arn, ', '.join(task_arns)))
+
+            while has_tasks(cluster, instance_arn, task_arns):
+              time.sleep(10)
+
+            try:
+              print('Terminating instance %s' % instance_id)
+              autoscaling.complete_lifecycle_action(
+                  LifecycleActionResult='CONTINUE',
+                  **pick(lifecycle_event, 'LifecycleHookName', 'LifecycleActionToken', 'AutoScalingGroupName'))
+            except Exception as e:
+              # Lifecycle action may have already completed.
+              print(str(e))
+
+
+          def container_instance_arn(cluster, instance_id):
+            """Turn an instance ID into a container instance ARN."""
+            arns = ecs.list_container_instances(cluster=cluster, filter='ec2InstanceId==' + instance_id)['containerInstanceArns']
+            if not arns:
+              return None
+            return arns[0]
+
+          def container_instance_task_arns(cluster, instance_arn):
+            """Fetch tasks for a container instance ARN."""
+            arns = ecs.list_tasks(cluster=cluster, containerInstance=instance_arn)['taskArns']
+            return arns
+
+          def has_tasks(cluster, instance_arn, task_arns):
+            """Return True if the instance is running tasks for the given cluster."""
+            instances = ecs.describe_container_instances(cluster=cluster, containerInstances=[instance_arn])['containerInstances']
+            if not instances:
+              return False
+            instance = instances[0]
+
+            if instance['status'] == 'ACTIVE':
+              # Start draining, then try again later
+              set_container_instance_to_draining(cluster, instance_arn)
+              return True
+
+            task_count = None
+
+            if task_arns:
+              # Fetch details for tasks running on the container instance
+              tasks = ecs.describe_tasks(cluster=cluster, tasks=task_arns)['tasks']
+              if tasks:
+                # Consider any non-stopped tasks as running
+                task_count = sum(task['lastStatus'] != 'STOPPED' for task in tasks) + instance['pendingTasksCount']
+
+            if not task_count:
+              # Fallback to instance task counts if detailed task information is unavailable
+              task_count = instance['runningTasksCount'] + instance['pendingTasksCount']
+
+            print('Instance %s has %s tasks' % (instance_arn, task_count))
+
+            return task_count > 0
+
+          def set_container_instance_to_draining(cluster, instance_arn):
+            ecs.update_container_instances_state(
+                cluster=cluster,
+                containerInstances=[instance_arn], status='DRAINING')
+
+
+          def pick(dct, *keys):
+            """Pick a subset of a dict."""
+            return {k: v for k, v in dct.items() if k in keys}
+      Environment:
+        Variables:
+          CLUSTER:
+            Ref: testclusterDF8B0D19
+      Handler: index.lambda_handler
+      Role:
+        Fn::GetAtt:
+          - asgDrainECSHookFunctionServiceRoleC052B966
+          - Arn
+      Runtime: python3.9
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+      Timeout: 310
+    DependsOn:
+      - asgDrainECSHookFunctionServiceRoleDefaultPolicy4BFB0871
+      - asgDrainECSHookFunctionServiceRoleC052B966
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/DrainECSHook/Function/Resource
+  asgDrainECSHookFunctionAllowInvokeAwsCloudformationBugStackasgLifecycleHookDrainHookTopic3D3A49A437F7B433:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::GetAtt:
+          - asgDrainECSHookFunction4A673AE9
+          - Arn
+      Principal: sns.amazonaws.com
+      SourceArn:
+        Ref: asgLifecycleHookDrainHookTopicC6CABF48
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/DrainECSHook/Function/AllowInvoke:AwsCloudformationBugStackasgLifecycleHookDrainHookTopic3D3A49A4
+  asgDrainECSHookFunctionTopicFFE1E612:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint:
+        Fn::GetAtt:
+          - asgDrainECSHookFunction4A673AE9
+          - Arn
+      Protocol: lambda
+      TopicArn:
+        Ref: asgLifecycleHookDrainHookTopicC6CABF48
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/DrainECSHook/Function/Topic/Resource
+  asgLifecycleHookDrainHookTopicC6CABF48:
+    Type: AWS::SNS::Topic
+    Properties:
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/LifecycleHookDrainHook/Topic/Resource
+  asgLifecycleHookDrainHookRole3C1C981B:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: autoscaling.amazonaws.com
+        Version: "2012-10-17"
+      Tags:
+        - Key: Name
+          Value: AwsCloudformationBugStack/asg
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/LifecycleHookDrainHook/Role/Resource
+  asgLifecycleHookDrainHookRoleDefaultPolicy0B1C44ED:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: sns:Publish
+            Effect: Allow
+            Resource:
+              Ref: asgLifecycleHookDrainHookTopicC6CABF48
+        Version: "2012-10-17"
+      PolicyName: asgLifecycleHookDrainHookRoleDefaultPolicy0B1C44ED
+      Roles:
+        - Ref: asgLifecycleHookDrainHookRole3C1C981B
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/LifecycleHookDrainHook/Role/DefaultPolicy/Resource
+  asgLifecycleHookDrainHook7D987AD1:
+    Type: AWS::AutoScaling::LifecycleHook
+    Properties:
+      AutoScalingGroupName:
+        Ref: asgASG4D014670
+      DefaultResult: CONTINUE
+      HeartbeatTimeout: 300
+      LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+      NotificationTargetARN:
+        Ref: asgLifecycleHookDrainHookTopicC6CABF48
+      RoleARN:
+        Fn::GetAtt:
+          - asgLifecycleHookDrainHookRole3C1C981B
+          - Arn
+    DependsOn:
+      - asgLifecycleHookDrainHookRoleDefaultPolicy0B1C44ED
+      - asgLifecycleHookDrainHookRole3C1C981B
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/asg/LifecycleHookDrainHook/Resource
+  capacityprovider1DCECBF4:
+    Type: AWS::ECS::CapacityProvider
+    Properties:
+      AutoScalingGroupProvider:
+        AutoScalingGroupArn:
+          Ref: asgASG4D014670
+        ManagedScaling:
+          Status: ENABLED
+          TargetCapacity: 100
+        ManagedTerminationProtection: DISABLED
+      Name: test-capacity-provider
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/capacity-provider/capacity-provider
+  maintaskTaskRole036739B8:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/main-task/TaskRole/Resource
+  maintaskTaskRoleDefaultPolicy69B173A8:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject
+              - s3:PutObjectLegalHold
+              - s3:PutObjectRetention
+              - s3:PutObjectTagging
+              - s3:PutObjectVersionTagging
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - testbucketE6E05ABE
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - testbucketE6E05ABE
+                        - Arn
+                    - /*
+          - Action:
+              - logs:CreateLogStream
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:PutLogEvents
+              - ssmmessages:CreateControlChannel
+              - ssmmessages:CreateDataChannel
+              - ssmmessages:OpenControlChannel
+              - ssmmessages:OpenDataChannel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: maintaskTaskRoleDefaultPolicy69B173A8
+      Roles:
+        - Ref: maintaskTaskRole036739B8
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/main-task/TaskRole/DefaultPolicy/Resource
+  maintask34BF89E0:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Command:
+            - test-bucket-cf-bug
+            - /mnt
+          Essential: true
+          Hostname: mountpoint
+          Image:
+            Fn::Join:
+              - ""
+              - - 590001430189.dkr.ecr.us-east-2.
+                - Ref: AWS::URLSuffix
+                - /public.ecr.aws/n1i9q1k0/mountpoint-s3:latest
+          Interactive: true
+          LinuxParameters:
+            Capabilities:
+              Add:
+                - SYS_ADMIN
+            Devices:
+              - ContainerPath: /dev/fuse
+                HostPath: /dev/fuse
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: mountpointcontiainerLogGroupEE504AF4
+              awslogs-stream-prefix: mountpoint-container
+              awslogs-region: us-east-2
+          MemoryReservation: 256
+          Name: mountpoint
+          PseudoTerminal: true
+      ExecutionRoleArn:
+        Fn::GetAtt:
+          - maintaskExecutionRole0D3BDFD3
+          - Arn
+      Family: AwsCloudformationBugStackmaintask9E897730
+      NetworkMode: bridge
+      RequiresCompatibilities:
+        - EC2
+      TaskRoleArn:
+        Fn::GetAtt:
+          - maintaskTaskRole036739B8
+          - Arn
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/main-task/Resource
+  maintaskExecutionRole0D3BDFD3:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/main-task/ExecutionRole/Resource
+  maintaskExecutionRoleDefaultPolicyE85E130D:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+            Effect: Allow
+            Resource: arn:aws:ecr:us-east-2:590001430189:repository/public.ecr.aws/n1i9q1k0/mountpoint-s3
+          - Action: ecr:GetAuthorizationToken
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - mountpointcontiainerLogGroupEE504AF4
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: maintaskExecutionRoleDefaultPolicyE85E130D
+      Roles:
+        - Ref: maintaskExecutionRole0D3BDFD3
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/main-task/ExecutionRole/DefaultPolicy/Resource
+  mountpointcontiainerLogGroupEE504AF4:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/mountpoint-contiainer/LogGroup/Resource
+  mountpointserviceServiceA5B3BEA8:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Ref: testclusterDF8B0D19
+      DeploymentConfiguration:
+        Alarms:
+          AlarmNames: []
+          Enable: false
+          Rollback: false
+        MaximumPercent: 100
+        MinimumHealthyPercent: 0
+      EnableECSManagedTags: false
+      EnableExecuteCommand: true
+      LaunchType: EC2
+      SchedulingStrategy: DAEMON
+      ServiceName: mountpoint
+      TaskDefinition:
+        Ref: maintask34BF89E0
+    DependsOn:
+      - maintaskTaskRoleDefaultPolicy69B173A8
+      - maintaskTaskRole036739B8
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/mountpoint-service/Service
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/2VSTZPaMAz9Lb0bl00vvbL0c4YDA9w7wghWG8fKWDYtk8l/rxw2sGFPenqy3lhPquxT9dXOP8FfmblDPfO0t902gavNBoVzdGi09qeTL7Z7zq7GZJbH8IauYc2e3OVOX/PeoBPbLX2WhLFUP8IltOAoXdaRz3TAuBBhR5CIg5iFnB7rQ+sjt6KQ/60hQoMqKea7q3Yg9Tc8UqAiVboeGQ4JKGB8x2nfFuOZdGJteIO9gZxYHHgKJ9stNNlek5+Rc1tefuBWdER3cR5/MdflxYQovlTqMbocdYybzJRYQQ7uZYdN6yENH5oyvSFobLdhPxSHeN/DHf0OkiA4VLeO5LXNQ7M/gO1+qNpoznu8xtiQiGa9kaAL3Oa9uEjt+GCS77glN/hbQBkt2g22LJQ4Xp5B0Hg+qcqK74aNuO/NUs+Am9ullUlueFIatz1I6plg0iM9qeXDn8fl9ybwAe2rfD5Xc/s018N+FaJZzCFRg3Zzjf8B03FFwfUCAAA=
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/CDKMetadata/Default
+Parameters:
+  SsmParameterValueawsserviceecsoptimizedamiamazonlinux2023recommendedimageidC96584B6F00A464EAD1953AFF4B05118Parameter:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ecs/optimized-ami/amazon-linux-2023/recommended/image_id
+  BootstrapVersion:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /cdk-bootstrap/hnb659fds/version
+    Description: Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]
+Rules:
+  CheckBootstrapVersion:
+    Assertions:
+      - Assert:
+          Fn::Not:
+            - Fn::Contains:
+                - - "1"
+                  - "2"
+                  - "3"
+                  - "4"
+                  - "5"
+                - Ref: BootstrapVersion
+        AssertDescription: CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.
+

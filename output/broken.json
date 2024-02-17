@@ -1,0 +1,112 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-east-2:590001430189:task-definition/AwsCloudformationBugStackmaintask9E897730:2",
+    "containerDefinitions": [
+        {
+            "name": "mountpoint",
+            "image": "590001430189.dkr.ecr.us-east-2.amazonaws.com/public.ecr.aws/n1i9q1k0/mountpoint-s3:latest",
+            "cpu": 0,
+            "memoryReservation": 256,
+            "links": [],
+            "portMappings": [],
+            "essential": true,
+            "entryPoint": [],
+            "command": [
+                "--allow-delete",
+                "--allow-overwrite",
+                "test-bucket-cf-bug",
+                "/mnt"
+            ],
+            "environment": [],
+            "environmentFiles": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "linuxParameters": {
+                "capabilities": {
+                    "add": [
+                        "SYS_ADMIN"
+                    ],
+                    "drop": []
+                },
+                "devices": [
+                    {
+                        "hostPath": "/dev/fuse",
+                        "containerPath": "/dev/fuse",
+                        "permissions": []
+                    }
+                ],
+                "tmpfs": []
+            },
+            "secrets": [],
+            "hostname": "mountpoint",
+            "dnsServers": [],
+            "dnsSearchDomains": [],
+            "extraHosts": [],
+            "dockerSecurityOptions": [],
+            "interactive": true,
+            "pseudoTerminal": true,
+            "dockerLabels": {},
+            "ulimits": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "AwsCloudformationBugStack-mountpointcontiainerLogGroupEE504AF4-xbJQPf7OUfxG",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "mountpoint-container"
+                },
+                "secretOptions": []
+            },
+            "systemControls": [],
+            "credentialSpecs": []
+        }
+    ],
+    "family": "AwsCloudformationBugStackmaintask9E897730",
+    "taskRoleArn": "arn:aws:iam::590001430189:role/AwsCloudformationBugStack-maintaskTaskRole036739B8-LVkLTuA0RodN",
+    "executionRoleArn": "arn:aws:iam::590001430189:role/AwsCloudformationBugStack-maintaskExecutionRole0D3B-MriCjbhfs6U1",
+    "networkMode": "bridge",
+    "revision": 2,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.22"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EXTERNAL",
+        "EC2"
+    ],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "registeredAt": "2024-02-17T18:29:42.924Z",
+    "registeredBy": "arn:aws:sts::590001430189:assumed-role/cdk-hnb659fds-cfn-exec-role-590001430189-us-east-2/AWSCloudFormation",
+    "tags": []
+}

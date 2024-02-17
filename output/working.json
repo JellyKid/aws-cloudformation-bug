@@ -1,0 +1,88 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-east-2:590001430189:task-definition/AwsCloudformationBugStackmaintask9E897730:3",
+    "containerDefinitions": [
+        {
+            "name": "mountpoint",
+            "image": "590001430189.dkr.ecr.us-east-2.amazonaws.com/public.ecr.aws/n1i9q1k0/mountpoint-s3:latest",
+            "cpu": 0,
+            "memoryReservation": 256,
+            "portMappings": [],
+            "essential": true,
+            "command": [
+                "test-bucket-cf-bug",
+                "/mnt"
+            ],
+            "environment": [],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "linuxParameters": {
+                "capabilities": {
+                    "add": [
+                        "SYS_ADMIN"
+                    ]
+                },
+                "devices": [
+                    {
+                        "hostPath": "/dev/fuse",
+                        "containerPath": "/dev/fuse"
+                    }
+                ]
+            },
+            "hostname": "mountpoint",
+            "interactive": true,
+            "pseudoTerminal": true,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "AwsCloudformationBugStack-mountpointcontiainerLogGroupEE504AF4-xbJQPf7OUfxG",
+                    "awslogs-region": "us-east-2",
+                    "awslogs-stream-prefix": "mountpoint-container"
+                }
+            }
+        }
+    ],
+    "family": "AwsCloudformationBugStackmaintask9E897730",
+    "taskRoleArn": "arn:aws:iam::590001430189:role/AwsCloudformationBugStack-maintaskTaskRole036739B8-LVkLTuA0RodN",
+    "executionRoleArn": "arn:aws:iam::590001430189:role/AwsCloudformationBugStack-maintaskExecutionRole0D3B-MriCjbhfs6U1",
+    "networkMode": "bridge",
+    "revision": 3,
+    "volumes": [],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.21"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.task-iam-role"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EXTERNAL",
+        "EC2"
+    ],
+    "requiresCompatibilities": [
+        "EC2"
+    ],
+    "registeredAt": "2024-02-17T18:59:51.646Z",
+    "registeredBy": "arn:aws:iam::590001430189:user/bpf_admin",
+    "tags": []
+}
