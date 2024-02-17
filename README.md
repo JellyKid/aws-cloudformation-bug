@@ -1,14 +1,26 @@
-# Welcome to your CDK TypeScript project
+# Cloudformation ECS Task Bug
+There seems to be an issue with CloudFormation where it will generate an empty entrypoint for ECS tasks. I've determined that it's related to the **command** parameter for the task. It is not a CDK issue though, as the CDK produces a YAML CF template that does not contain an empty entrypoint.
 
-This is a blank project for CDK development with TypeScript.
+The output directory in this repo contains the output from `cdk synth` and the task definition's JSON file created by CloudFormation for both the working and broken(main) branches. 
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+The main/master(broken) branch exhibits this behavior and the service/task will fail. To fix the issue, specifically look at the containerDefinition **command** parameter:
 
-## Useful commands
+    command: ["--allow-delete","--allow-overwrite",bucketName,"/mnt"]
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+If I remove the first 2 entries, like in the **working** branch:
+
+    command: [bucketName,"/mnt"]
+
+The CDK will produce a very similar yaml template, missing those 2 entries. When uploaded to CloudFormation, it will not create an empty entrypoint and the service will start just fine.
+  
+
+# Steps to reproduce the issue
+Download one of the broken or working CF templates from the output directory and upload it to CF manually.
+
+OR 
+
+Clone this repo, pick the branch you want to test **main**(broken) or **working**, and run `cdk deploy`.   
+
+# Error messages
+You should see weird errors on the service/task when it attempts to start like:
+`ECS CannotStartContainerError: Error response from daemon: failed to create shim task: OCI runtime create failed`
