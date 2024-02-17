@@ -63,7 +63,7 @@ export class AwsCloudformationBugStack extends cdk.Stack {
       logging: new AwsLogDriver({streamPrefix: 'mountpoint-container'}),
       interactive: true,
       pseudoTerminal: true,
-      command: ["--allow-delete","--allow-overwrite",bucketName,"/mnt"]      
+      command: [bucketName,"/mnt"]      
     })
 
     //grant taskrole readwrite access to bucket
