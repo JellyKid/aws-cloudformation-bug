@@ -3,6 +3,7 @@ import { AutoScalingGroup } from 'aws-cdk-lib/aws-autoscaling';
 import { InstanceClass, InstanceSize, InstanceType, Vpc } from 'aws-cdk-lib/aws-ec2';
 import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { AsgCapacityProvider, AwsLogDriver, Capability, Cluster, ContainerDefinition, ContainerImage, Ec2Service, Ec2TaskDefinition, EcsOptimizedImage, LinuxParameters } from 'aws-cdk-lib/aws-ecs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { BlockPublicAccess, Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
@@ -39,9 +40,8 @@ export class AwsCloudformationBugStack extends cdk.Stack {
     });
     myCluster.addAsgCapacityProvider(capacityProvider);
 
-    //get container image
-    const imageRepository  = Repository.fromRepositoryName(this,'mountpoint-ecr','public.ecr.aws/n1i9q1k0/mountpoint-s3');
-    const image = ContainerImage.fromEcrRepository(imageRepository,'latest');
+    //get container image    
+    const image = ContainerImage.fromRegistry('public.ecr.aws/n1i9q1k0/mountpoint-s3:latest');
 
     //set linux params for container
     const linuxParameters = new LinuxParameters(this, 'container-linux-params');
@@ -63,7 +63,7 @@ export class AwsCloudformationBugStack extends cdk.Stack {
       logging: new AwsLogDriver({streamPrefix: 'mountpoint-container'}),
       interactive: true,
       pseudoTerminal: true,
-      command: [bucketName,"/mnt"]      
+      command: ["--allow-overwrite","--allow-delete",bucketName,"/mnt"]
     })
 
     //grant taskrole readwrite access to bucket

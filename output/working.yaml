@@ -562,6 +562,15 @@ Resources:
       Name: test-capacity-provider
     Metadata:
       aws:cdk:path: AwsCloudformationBugStack/capacity-provider/capacity-provider
+  loggroupB02AAEB1:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: cf-bug-log-group
+      RetentionInDays: 1
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: AwsCloudformationBugStack/log-group/Resource
   maintaskTaskRole036739B8:
     Type: AWS::IAM::Role
     Properties:
